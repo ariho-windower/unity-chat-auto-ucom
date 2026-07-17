@@ -1,69 +1,110 @@
-# ucom - Unity Chat Auto Join & Optional Greeting
-Windower4 Addon / ユニティチャット自動参加＋挨拶アドオン
+# ucom – Unity Chat Auto Join & Optional Greeting
+Windower4 Addon
 
-## Overview / 概要
+## Overview
 
-ucom uses Windower’s official outgoing packet API to send Unity Chat join requests.
-It does not craft raw packets; it only uses Windower’s safe packet injection interface.
+ucom is a Windower addon that repeatedly sends Unity Chat join packets using Windower’s packet library.  
+Unity Chat success detection is based on incoming packets, but in some environments a clear success indicator may not be available,  
+so ucom uses repeated join attempts as a fallback.  
+If the user configures a greeting message, ucom can send it after joining.
 
-Because Unity Chat success detection differs between worlds, ucom repeats join requests
-at fixed intervals. Future versions will include safety checks (zoning, cutscenes, events)
-and optional stop conditions after successful join detection.
-
-ucom は Windower の公式 outgoing packet API を使用して
-ユニティチャット参加要求を送信します。
-生パケットの生成は行わず、Windower が提供する安全な送信インターフェースのみを使用しています。
-
-ユニティチャット参加成功の検出方法はワールドごとに異なるため、
-一定間隔で参加要求を繰り返す方式を採用しています。
-今後のバージョンでは、ゾーン中・イベント中などの安全チェックや、
-参加成功後の停止条件を追加予定です。
+ucom は、Windower の packet ライブラリを使用してユニティチャット参加要求の
+アウトゴーイングパケットを繰り返し送信するアドオンです。  
+ユニティチャット参加成功の検出はインカミングパケットに基づきますが、
+環境によって明確な成功通知が得られない場合があるため、
+フォールバックとして参加要求を繰り返す方式を採用しています。  
+挨拶はユーザーが設定した場合のみ送信されます。
 
 ---
 
-## Features / 機能
-- Auto Unity Chat join loop（ユニティチャット自動参加）
-- Optional greeting message（挨拶は設定した場合のみ送信）
-- Multi-language support（日本語・英語）
-- Retail-compatible（通常版FFXIで動作）
-- Lightweight single-file addon（軽量・Lua単体）
+## Features
+
+- Unity Chat auto join loop  
+- Optional greeting message (user-configurable)  
+- Simple behavior focused on Unity Chat only  
+- Lightweight single-file addon (Lua)
+
+機能概要：
+
+- ユニティチャット自動参加ループ  
+- 任意設定の挨拶メッセージ送信  
+- ユニティチャット専用のシンプルな挙動  
+- Lua 単体の軽量アドオン
 
 ---
 
-## Installation / インストール
-1. Place **ucom.lua** into:  
+## Installation
+
+1. Place `ucom.lua` into:
+
    `Windower4/addons/ucom/`
-2. Enable the addon:  
+
+2. Load the addon:
+
+   `/lua load ucom`
+
+インストール手順：
+
+1. `ucom.lua` を次のフォルダに配置します：
+
+   `Windower4/addons/ucom/`
+
+2. アドオンをロードします：
+
    `/lua load ucom`
 
 ---
 
-## Usage / 使い方
-The addon continuously attempts Unity Chat join in the background.  
-A greeting message will be sent **only if the user has configured one**.
+## Usage
 
-アドオンはバックグラウンドでユニティチャット参加要求を送り続けます。  
-挨拶はユーザーが設定した場合にのみ送信されます。
+ucom periodically sends Unity Chat join packets in the background.  
+If a greeting message is configured, it will be sent after joining (subject to detection logic and environment).
 
-### Commands / コマンド
-- `/ucom on` ? Enable auto join（自動参加オン）
-- `/ucom off` ? Disable auto join（自動参加オフ）
-- `/ucom greet <text>` ? Set greeting message（挨拶設定）
-- `/ucom status` ? Show current status（状態表示）
+使い方：
+
+ucom はバックグラウンドで一定間隔ごとにユニティチャット参加要求を送信します。  
+挨拶メッセージを設定している場合、参加後に挨拶を送信します（検出ロジックや環境に依存します）。
+
+### Commands
+
+- `/ucom on` – Enable auto join  
+- `/ucom off` – Disable auto join  
+- `/ucom greet <text>` – Set greeting message  
+- `/ucom status` – Show current status
+
+コマンド：
+
+- `/ucom on` – 自動参加を有効化  
+- `/ucom off` – 自動参加を無効化  
+- `/ucom greet <text>` – 挨拶メッセージを設定  
+- `/ucom status` – 現在の状態を表示
 
 ---
 
-## Notes / 注意点
-- No chat log parsing（チャットログ解析なし）
-- No packet injection（パケット書き込みなし）
-- Uses only standard Windower commands（Windower標準コマンドのみ）
-- Designed for stability even when Unity Chat behaves inconsistently  
-  （ユニティチャットの挙動が不安定でも安定動作）
+## Notes
+
+- Uses Windower’s packet library to construct and send outgoing Unity Chat packets  
+- Does not attempt to modify or filter incoming packets  
+- Behavior may vary depending on how the client and server expose Unity Chat status  
+- Future updates may add more safety checks (zoning, events, cutscenes) and stop conditions
+
+注意事項：
+
+- Windower の packet ライブラリを使用してユニティチャット参加用のアウトゴーイングパケットを送信します  
+- インカミングパケットの改変やフィルタリングは行いません  
+- クライアントやサーバー側のユニティチャット状態の扱いにより、挙動が環境依存となる場合があります  
+- 今後の更新で、ゾーン中・イベント中・カットシーン中などの安全チェックや停止条件を追加する可能性があります
 
 ---
 
-## Author / 作者
-**ARIHO + Copilot**
+## Author
 
-Special thanks to Copilot for assistance with development, debugging, and documentation.  
-開発・解析・ドキュメント作成に協力してくれた Copilot に感謝します。
+**ARIHO**
+
+Special thanks to community feedback on packet handling and Unity Chat behavior.
+
+作者：
+
+**ARIHO**
+
+パケット処理やユニティチャット挙動に関するフィードバックをくれたコミュニティに感謝します。

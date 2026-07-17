@@ -3,15 +3,21 @@ Windower4 Addon / ユニティチャット自動参加＋挨拶アドオン
 
 ## Overview / 概要
 
-ucom is a Windower addon that continuously sends Unity Chat join requests.  
-Since the method for detecting successful Unity Chat entry differs between worlds,  
-the addon uses a simple and stable approach: repeatedly issuing join commands at fixed intervals.  
-It can also send an optional greeting message if the user configures one.
+ucom uses Windower’s official outgoing packet API to send Unity Chat join requests.
+It does not craft raw packets; it only uses Windower’s safe packet injection interface.
 
-ucom は、ユニティチャット参加要求を自動で送信し続ける Windower 用アドオンです。  
-ユニティチャット参加成功を検出する方法はワールドごとに異なるため、  
-安定性を重視し、参加要求を一定間隔で繰り返す方式を採用しています。  
-挨拶はユーザーが設定した場合のみ送信されます。
+Because Unity Chat success detection differs between worlds, ucom repeats join requests
+at fixed intervals. Future versions will include safety checks (zoning, cutscenes, events)
+and optional stop conditions after successful join detection.
+
+ucom は Windower の公式 outgoing packet API を使用して
+ユニティチャット参加要求を送信します。
+生パケットの生成は行わず、Windower が提供する安全な送信インターフェースのみを使用しています。
+
+ユニティチャット参加成功の検出方法はワールドごとに異なるため、
+一定間隔で参加要求を繰り返す方式を採用しています。
+今後のバージョンでは、ゾーン中・イベント中などの安全チェックや、
+参加成功後の停止条件を追加予定です。
 
 ---
 

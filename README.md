@@ -1,118 +1,46 @@
-_addon.name     = 'ucom'
-_addon.author   = 'ARIHO + Copilot'
-_addon.version  = '1.0'
-_addon.commands = {'ucom'}
+# ucom â€“ Unity Chat Auto Join & Greeting Addon for Windower
 
-local packets = require('packets')
+ucom is a lightweight Windower addon that automatically sends Unity Chat participation requests and provides a simple auto-greeting command.  
+It is designed to work on all retail worlds, regardless of server-specific behavior.
 
-local info = windower.ffxi.get_info()
-local lang = string.lower(info.language)  -- japanese / english / french / german
+## Features
 
----------------------------------------------------------
--- ƒtƒ‰ƒO
----------------------------------------------------------
-local join_loop = false
+- Automatically sends Unity Chat participation requests  
+  - Repeated every 2 seconds  
+  - Unlimited attempts until stopped  
+- Sends an Auto-Translate â€œHello.â€ message to Unity Chat  
+- Fully multi-language (Japanese / English / French / German)  
+  - Language is detected from the FFXI client  
+- Safe: does not modify memory or use unsupported packet injection  
+- Simple command structure
 
----------------------------------------------------------
--- ƒƒbƒZ[ƒW
----------------------------------------------------------
-local msg = {
-    japanese = {
-        start = 'ƒ†ƒjƒeƒBQ‰Áƒ‹[ƒvŠJni2•b‚²‚Æ‚É–³§ŒÀj',
-        stop  = 'ƒ†ƒjƒeƒBQ‰Áƒ‹[ƒv’â~',
-        hello = 'u‚±‚ñ‚É‚¿‚ÍBv‚ğ‘—M‚µ‚Ü‚µ‚½',
-        send  = 'ƒ†ƒjƒeƒBQ‰Á—v‹‚ğ‘—M‚µ‚Ü‚µ‚½',
-        usage = 'g‚¢•û: //ucom join | stop | hello',
-    },
-    english = {
-        start = 'Unity join loop started (every 2 seconds, unlimited)',
-        stop  = 'Unity join loop stopped',
-        hello = 'Sent gHello.h to Unity chat',
-        send  = 'Sent Unity join request',
-        usage = 'Usage: //ucom join | stop | hello',
-    },
-    french = {
-        start = 'Boucle de participation Unity d?marr?e (toutes les 2 secondes, illimit?e)',
-        stop  = 'Boucle de participation Unity arr?t?e',
-        hello = '? Bonjour. ? envoy? au chat Unity',
-        send  = 'Demande de participation Unity envoy?e',
-        usage = 'Utilisation : //ucom join | stop | hello',
-    },
-    german = {
-        start = 'Unity-Beitrittsschleife gestartet (alle 2 Sekunden, unbegrenzt)',
-        stop  = 'Unity-Beitrittsschleife gestoppt',
-        hello = '?Hallo.g an den Unity-Chat gesendet',
-        send  = 'Unity-Beitrittsanforderung gesendet',
-        usage = 'Verwendung: //ucom join | stop | hello',
-    },
-}
+## Commands
 
----------------------------------------------------------
--- ƒƒbƒZ[ƒWæ“¾ŠÖ”
----------------------------------------------------------
-local function M(key)
-    return msg[lang][key] or msg['english'][key]
-end
+### `//ucom join`
+Start sending Unity Chat participation requests every 2 seconds.  
+This continues until `//ucom stop` is executed.
 
----------------------------------------------------------
--- ƒ†ƒjƒeƒBQ‰Á—v‹i0x118j
----------------------------------------------------------
-local function send_unity_status(enable)
-    local p = packets.new('outgoing', 0x118)
-    p['Chat Status'] = enable and true or false
-    p['_unknown2'] = 1
-    packets.inject(p)
-end
+### `//ucom stop`
+Stop the join loop.
 
----------------------------------------------------------
--- u‚±‚ñ‚É‚¿‚ÍBvi’èŒ^•¶j
----------------------------------------------------------
-local function say_hello()
-    local at_start = 0xFD
-    local at_type = 0x02
-    local at_lang = 0x01
-    local at_id_upper = 0x01
-    local at_id_lower = 0x0B
-    local at_end = 0xFD
-    local at_string = string.char(at_start, at_type, at_lang, at_id_upper, at_id_lower, at_end)
+### `//ucom hello`
+Send an Auto-Translate â€œHello.â€ message to Unity Chat.
 
-    windower.send_command('input /unity '..at_string)
-end
+## Requirements
 
----------------------------------------------------------
--- joinƒ‹[ƒvi2•b‚²‚Æ‚É–³§ŒÀj
----------------------------------------------------------
-local function join_loop_task()
-    if not join_loop then
-        return
-    end
+- Windower 4  
+- packets library (included with Windower)
 
-    send_unity_status(true)
-    windower.add_to_chat(207, '[ucom] '..M('send'))
+## Installation
 
-    coroutine.schedule(join_loop_task, 2)
-end
+Place `ucom.lua` into:
 
----------------------------------------------------------
--- ƒRƒ}ƒ“ƒhˆ—
----------------------------------------------------------
-windower.register_event('addon command', function(cmd)
-    cmd = cmd and cmd:lower() or ''
+## æ—¥æœ¬èª
 
-    if cmd == 'join' then
-        join_loop = true
-        windower.add_to_chat(207, '[ucom] '..M('start'))
-        join_loop_task()
+ucom ã¯ã€ãƒ¦ãƒ‹ãƒ†ã‚£ãƒãƒ£ãƒƒãƒˆå‚åŠ è¦æ±‚ã‚’è‡ªå‹•ã§é€ä¿¡ã—ç¶šã‘ã‚‹ Windower ç”¨ã‚¢ãƒ‰ã‚ªãƒ³ã§ã™ã€‚  
+ãƒ¦ãƒ‹ãƒ†ã‚£ãƒãƒ£ãƒƒãƒˆå‚åŠ æˆåŠŸã‚’æ¤œå‡ºã™ã‚‹æ–¹æ³•ã¯ãƒ¯ãƒ¼ãƒ«ãƒ‰ã”ã¨ã«ç•°ãªã‚‹ãŸã‚ã€  
+å‚åŠ è¦æ±‚ã‚’ç¹°ã‚Šè¿”ã™æ–¹å¼ã‚’æ¡ç”¨ã—ã¦ã„ã¾ã™ã€‚
 
-    elseif cmd == 'stop' then
-        join_loop = false
-        windower.add_to_chat(207, '[ucom] '..M('stop'))
+ã‚³ãƒãƒ³ãƒ‰ã¯ `//ucom join`, `//ucom stop`, `//ucom hello` ã®3ã¤ã ã‘ã§ã€  
+ã‚·ãƒ³ãƒ—ãƒ«ã‹ã¤å®‰å…¨ã«å‹•ä½œã—ã¾ã™ã€‚
 
-    elseif cmd == 'hello' then
-        say_hello()
-        windower.add_to_chat(207, '[ucom] '..M('send'))
-
-    else
-        windower.add_to_chat(207, '[ucom] '..M('usage'))
-    end
-end)

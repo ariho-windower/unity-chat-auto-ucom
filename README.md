@@ -1,110 +1,134 @@
-# ucom – Unity Chat Auto Join & Optional Greeting
-Windower4 Addon
+# ucom - Unity Chat Auto Join Addon
+Windower4 / FFXI  
+Version 1.9.3-stable
 
 ## Overview
 
-ucom is a Windower addon that repeatedly sends Unity Chat join packets using Windower’s packet library.  
-Unity Chat success detection is based on incoming packets, but in some environments a clear success indicator may not be available,  
-so ucom uses repeated join attempts as a fallback.  
-If the user configures a greeting message, ucom can send it after joining.
+ucom is a Windower4 addon that automatically joins the Unity Chat in Final Fantasy XI.
 
-ucom は、Windower の packet ライブラリを使用してユニティチャット参加要求の
-アウトゴーイングパケットを繰り返し送信するアドオンです。  
-ユニティチャット参加成功の検出はインカミングパケットに基づきますが、
-環境によって明確な成功通知が得られない場合があるため、
-フォールバックとして参加要求を繰り返す方式を採用しています。  
-挨拶はユーザーが設定した場合のみ送信されます。
+Unity Chat has several behaviors that make automation difficult:
+- No success message is shown when joining
+- Failure messages (“You are not participating…”) can be delayed
+- “Unity chat is full” messages can also be delayed
+- Incoming text/chunk timing is inconsistent
+- Chat Status updates may lag behind actual state
+
+ucom solves these issues using a time-based detection method that reliably handles delayed logs and ensures stable auto-joining.
+
+(日本語補足: ユニティチャットは成功時にログが出ず、失敗ログが遅延するため、自動化が非常に難しい仕様です。ucom はログ遅延に完全対応した時間ベース判定方式を採用しています。)
 
 ---
 
 ## Features
 
-- Unity Chat auto join loop  
-- Optional greeting message (user-configurable)  
-- Simple behavior focused on Unity Chat only  
-- Lightweight single-file addon (Lua)
+- Auto join Unity Chat (`//ucom join`)
+- Auto join without greeting (`//ucom auto`)
+- Send Unity greeting (`//ucom hello`)
+- Leave Unity Chat (`//ucom stop`)
+- Fully handles delayed logs (10-second detection window)
+- Success = “no failure logs for 2 consecutive attempts”
+- Uses original log text only
+- Does not rely on other players’ chat messages
+- No false greetings, no false success
+- Tested in Phoenix World / Japanese client environment
 
-機能概要：
+(日本語補足: Phoenixワールド・日本語環境でのみ実戦テスト済みです。他環境ではログ文言が異なる可能性があります。)
 
-- ユニティチャット自動参加ループ  
-- 任意設定の挨拶メッセージ送信  
-- ユニティチャット専用のシンプルな挙動  
-- Lua 単体の軽量アドオン
+---
+
+## Commands
+
+| Command        | Description |
+|----------------|-------------|
+| `//ucom join`  | Join Unity Chat (with greeting) |
+| `//ucom auto`  | Join Unity Chat (no greeting) |
+| `//ucom hello` | Send Unity greeting |
+| `//ucom stop`  | Leave Unity Chat |
+| `//ucom`       | Show command list |
+
+---
+
+## Detection Logic (How It Works)
+
+### Failure messages
+Japanese:
+- 「ユニティチャットに参加していません」
+- 「人数制限により入れません」
+
+English:
+- “You are not participating in Unity chat.”
+- “Unity chat is full.”
+
+If any of these appear → failure.
+
+### Success messages
+FFXI does not output any success message.  
+Success cannot be determined from logs.
+
+### Time-based detection
+1. Send `/unity .`
+2. Wait 10 seconds
+3. If no failure message appears → success candidate
+4. If success candidate occurs twice consecutively → success confirmed
+
+### Stop behavior
+After `//ucom stop`, success detection is never executed.  
+This prevents false greetings or false success.
+
+---
+
+## Tested Environment
+
+This addon has been fully tested only in:
+- Phoenix World
+- Japanese client
+- Japanese log messages
+- Windower4 JP environment
+
+(日本語補足: Phoenixワールド・日本語環境でのみ動作確認しています。他ワールド・英語環境ではログ文言が異なる可能性があります。)
+
+---
+
+## Important Notice for English-speaking Users / Other Worlds
+
+Unity Chat messages differ between languages and may vary slightly by world.
+
+If you are using:
+- English client
+- Another world
+- Different log settings
+
+There is a chance that:
+- Failure messages may not match
+- Detection may behave incorrectly
+- Auto-join may not trigger as expected
+
+If you encounter issues, please send feedback:
+- Your world name
+- Your client language
+- Original incoming text lines
+- Actual failure messages you see
+- Logs around success/failure
+- Any incorrect behavior you observed
+
+(日本語補足: 英語環境ではログ文言が異なるため、誤判定が起きる可能性があります。ログの original 行を送っていただければ改善できます。)
 
 ---
 
 ## Installation
 
-1. Place `ucom.lua` into:
+Place the file here:
 
-   `Windower4/addons/ucom/`
+Windower4/addons/ucom/ucom.lua
 
-2. Load the addon:
+To auto-load:
 
-   `/lua load ucom`
+lua load ucom
 
-インストール手順：
-
-1. `ucom.lua` を次のフォルダに配置します：
-
-   `Windower4/addons/ucom/`
-
-2. アドオンをロードします：
-
-   `/lua load ucom`
 
 ---
 
-## Usage
+## License
 
-ucom periodically sends Unity Chat join packets in the background.  
-If a greeting message is configured, it will be sent after joining (subject to detection logic and environment).
+MIT License
 
-使い方：
-
-ucom はバックグラウンドで一定間隔ごとにユニティチャット参加要求を送信します。  
-挨拶メッセージを設定している場合、参加後に挨拶を送信します（検出ロジックや環境に依存します）。
-
-### Commands
-
-- `/ucom on` – Enable auto join  
-- `/ucom off` – Disable auto join  
-- `/ucom greet <text>` – Set greeting message  
-- `/ucom status` – Show current status
-
-コマンド：
-
-- `/ucom on` – 自動参加を有効化  
-- `/ucom off` – 自動参加を無効化  
-- `/ucom greet <text>` – 挨拶メッセージを設定  
-- `/ucom status` – 現在の状態を表示
-
----
-
-## Notes
-
-- Uses Windower’s packet library to construct and send outgoing Unity Chat packets  
-- Does not attempt to modify or filter incoming packets  
-- Behavior may vary depending on how the client and server expose Unity Chat status  
-- Future updates may add more safety checks (zoning, events, cutscenes) and stop conditions
-
-注意事項：
-
-- Windower の packet ライブラリを使用してユニティチャット参加用のアウトゴーイングパケットを送信します  
-- インカミングパケットの改変やフィルタリングは行いません  
-- クライアントやサーバー側のユニティチャット状態の扱いにより、挙動が環境依存となる場合があります  
-- 今後の更新で、ゾーン中・イベント中・カットシーン中などの安全チェックや停止条件を追加する可能性があります
-
----
-
-## Author
-
-**ARIHO**
-
-Special thanks to community feedback on packet handling and Unity Chat behavior.
-
-作者：
-
-**ARIHO**
-
-パケット処理やユニティチャット挙動に関するフィードバックをくれたコミュニティに感謝します。

@@ -1,134 +1,149 @@
-# ucom - Unity Chat Auto Join Addon
-Windower4 / FFXI  
-Version 1.9.3-stable
+# ucom 2.0.1 – Release Notes
+Unity Chat Auto Join Addon for Windower4  
+Author: ARIHO + Copilot
+
+============================================================
+English Section
+============================================================
 
 ## Overview
+ucom 2.0.1 is the first public release after a series of internal development builds (v1.9.x and v2.0.0).  
+This version focuses on improving the reliability of Unity Chat participation detection.
 
-ucom is a Windower4 addon that automatically joins the Unity Chat in Final Fantasy XI.
+In earlier internal builds, the addon relied solely on the server’s incoming 0x061 packet to confirm successful participation.  
+However, depending on server behavior or timing (e.g., already joined), this packet may not be sent.  
+As a result, the addon could incorrectly display “Not Joined” even though Unity Chat messages were visible.
 
-Unity Chat has several behaviors that make automation difficult:
-- No success message is shown when joining
-- Failure messages (“You are not participating…”) can be delayed
-- “Unity chat is full” messages can also be delayed
-- Incoming text/chunk timing is inconsistent
-- Chat Status updates may lag behind actual state
+Version 2.0.1 resolves this issue by treating the character as “Joined” immediately when sending the join request (outgoing 0x118).  
+If the server later reports a failure (Message 287), the addon correctly switches back to “Not Joined”.
 
-ucom solves these issues using a time-based detection method that reliably handles delayed logs and ensures stable auto-joining.
-
-(日本語補足: ユニティチャットは成功時にログが出ず、失敗ログが遅延するため、自動化が非常に難しい仕様です。ucom はログ遅延に完全対応した時間ベース判定方式を採用しています。)
+This ensures that the addon’s status display always matches the actual Unity Chat behavior.
 
 ---
 
-## Features
+## Changes in 2.0.1
+### ✔ Improved Unity Chat participation state handling
+- `unity_active = true` is now set at the moment the join request is sent.
+- Prevents false “Not Joined” states when the server does not send 0x061.
+- If incoming 0x009 (Message 287) is received, the addon sets `unity_active = false`.
 
-- Auto join Unity Chat (`//ucom join`)
-- Auto join without greeting (`//ucom auto`)
-- Send Unity greeting (`//ucom hello`)
-- Leave Unity Chat (`//ucom stop`)
-- Fully handles delayed logs (10-second detection window)
-- Success = “no failure logs for 2 consecutive attempts”
-- Uses original log text only
-- Does not rely on other players’ chat messages
-- No false greetings, no false success
-- Tested in Phoenix World / Japanese client environment
+### ✔ More stable status display
+- `/ucom` reliably shows the correct participation state.
+- Eliminates mismatches such as:
+  - Status: “Not Joined”
+  - Actual: Unity Chat messages visible
 
-(日本語補足: Phoenixワールド・日本語環境でのみ実戦テスト済みです。他環境ではログ文言が異なる可能性があります。)
+### ✔ More robust behavior on login and mode switching
+- Turning auto‑mode OFF immediately after login no longer causes desynchronization.
+- Stable even in environments with packet timing variations (e.g., Phoenix).
 
----
-
-## Commands
-
-| Command        | Description |
-|----------------|-------------|
-| `//ucom join`  | Join Unity Chat (with greeting) |
-| `//ucom auto`  | Join Unity Chat (no greeting) |
-| `//ucom hello` | Send Unity greeting |
-| `//ucom stop`  | Leave Unity Chat |
-| `//ucom`       | Show command list |
+### ✔ Internal stability improvements
+- Minor adjustments to ensure consistent behavior across zone changes and character changes.
 
 ---
 
-## Detection Logic (How It Works)
+## Internal / Unreleased Versions
+### v2.0.0 (Internal / Unreleased)
+- Unified configuration to global section  
+- Added `/ucom` status display  
+- Improved internal state reset  
+- Removed leave on login  
+- Cleaned join/auto/hello/stop behavior  
+- Verified stability on Phoenix  
 
-### Failure messages
-Japanese:
-- 「ユニティチャットに参加していません」
-- 「人数制限により入れません」
-
-English:
-- “You are not participating in Unity chat.”
-- “Unity chat is full.”
-
-If any of these appear → failure.
-
-### Success messages
-FFXI does not output any success message.  
-Success cannot be determined from logs.
-
-### Time-based detection
-1. Send `/unity .`
-2. Wait 10 seconds
-3. If no failure message appears → success candidate
-4. If success candidate occurs twice consecutively → success confirmed
-
-### Stop behavior
-After `//ucom stop`, success detection is never executed.  
-This prevents false greetings or false success.
+### v1.9.x Series (Internal / Development Builds)
+- Experimental auto‑join logic  
+- Early packet‑handling improvements  
+- Initial testing of Unity Chat state tracking  
+- Not intended for public release  
 
 ---
 
-## Tested Environment
-
-This addon has been fully tested only in:
-- Phoenix World
-- Japanese client
-- Japanese log messages
-- Windower4 JP environment
-
-(日本語補足: Phoenixワールド・日本語環境でのみ動作確認しています。他ワールド・英語環境ではログ文言が異なる可能性があります。)
+## Known Issues
+None at this time.
 
 ---
 
-## Important Notice for English-speaking Users / Other Worlds
-
-Unity Chat messages differ between languages and may vary slightly by world.
-
-If you are using:
-- English client
-- Another world
-- Different log settings
-
-There is a chance that:
-- Failure messages may not match
-- Detection may behave incorrectly
-- Auto-join may not trigger as expected
-
-If you encounter issues, please send feedback:
-- Your world name
-- Your client language
-- Original incoming text lines
-- Actual failure messages you see
-- Logs around success/failure
-- Any incorrect behavior you observed
-
-(日本語補足: 英語環境ではログ文言が異なるため、誤判定が起きる可能性があります。ログの original 行を送っていただければ改善できます。)
-
----
-
-## Installation
-
-Place the file here:
-
-Windower4/addons/ucom/ucom.lua
-
-To auto-load:
-
-lua load ucom
-
+## Compatibility
+- Windower4  
+- Verified on Phoenix environment  
+- Lua files: Shift‑JIS  
+- README / Release Notes: UTF‑8  
 
 ---
 
 ## License
-
 MIT License
 
+============================================================
+Japanese Section（日本語）
+============================================================
+
+## 概要
+ucom 2.0.1 は、内部開発版（v1.9.x および v2.0.0）を経て公開される最初の正式版です。  
+本バージョンでは、ユニティチャット参加状態の判定をより安定させることに重点を置いています。
+
+内部版では、参加成功を確認するために incoming 0x061 パケットのみを使用していました。  
+しかし、サーバの挙動やタイミング（例：すでに参加済み）によっては、このパケットが送られない場合があり、  
+黄色チャットが流れているにもかかわらず「未参加」と誤表示される問題がありました。
+
+2.0.1 では、参加要求（outgoing 0x118）を送信した時点で参加中とみなし、  
+その後サーバから失敗（Message 287）が返ってきた場合のみ未参加に戻す方式に変更しました。
+
+これにより、状態表示が実際のチャット状況と常に一致するようになります。
+
+---
+
+## 2.0.1 の変更点
+### ✔ Unity チャット参加状態の判定を改善
+- 参加要求送信時点で `unity_active = true` を設定するように変更。
+- サーバが 0x061 を返さないケースでも誤表示が発生しない。
+- incoming 0x009（Message 287）を受信した場合のみ `unity_active = false` に戻す。
+
+### ✔ 状態表示の安定化
+- `/ucom` の表示が常に実際の参加状態と一致。
+- 以下のようなズレを完全に解消：
+  - 状態：未参加  
+  - 実際：黄色チャットが流れている
+
+### ✔ ログオン直後や mode 切り替え時の安定性向上
+- ログオン直後に `/ucom mode off` を実行しても状態がズレない。
+- Phoenix のようなパケットタイミングが特殊な環境でも安定。
+
+### ✔ 内部安定性の向上
+- エリアチェンジやキャラチェンジ時の動作をより安定化。
+
+---
+
+## 内部版（未公開）
+### v2.0.0（内部版 / 未公開）
+- 設定方式を global に統一  
+- /ucom 状態表示を追加  
+- 内部状態初期化処理を改善  
+- ログオン時の leave 送信を廃止  
+- join / auto / hello / stop の動作整理  
+- Phoenix での安定性確認済み  
+
+### v1.9.x 系列（内部開発版）
+- 自動参加ロジックの試験実装  
+- パケット処理の初期改善  
+- Unity チャット状態追跡の初期テスト  
+- 公開を前提としない内部ビルド  
+
+---
+
+## 既知の問題
+現時点ではありません。
+
+---
+
+## 互換性
+- Windower4  
+- Phoenix 環境で動作確認済み  
+- Lua ファイル：Shift‑JIS  
+- README / Release Notes：UTF‑8  
+
+---
+
+## ライセンス
+MIT License
